@@ -35,21 +35,13 @@ import argparse
 
 __author__ = 'Nicholas Albright, 2016'
 __license__ = 'MIT'
-<<<<<<< HEAD
 __version__ = 0.2
-=======
-__version__ = 0.1
->>>>>>> 7f219a7fd9fe0c53b9f578c405ce2c7e78749e94
 
 
 def _score(jblob):
     """Internal function to return a score based on descriptive value of Useragents.
 
-<<<<<<< HEAD
     Response will be a list of tuples: [(useragent, score, risk)]
-=======
-    Response will be a list of tuples: [(useragent, score)]
->>>>>>> 7f219a7fd9fe0c53b9f578c405ce2c7e78749e94
     """
     r = []
     for agent in jblob['results']:
@@ -72,15 +64,10 @@ def _score(jblob):
         if score > 60: risk = 'Moderate'
         if score > 80: risk = 'High'
         if score > 95: risk = 'Extreme'
-<<<<<<< HEAD
         if agent and score and risk:
             r.append((agent, score, risk))
     if r:
         return r
-=======
-        r.append((agent, score, risk))
-    return r
->>>>>>> 7f219a7fd9fe0c53b9f578c405ce2c7e78749e94
 
 
 def define_useragent(useragents, output='score'):
@@ -89,13 +76,10 @@ def define_useragent(useragents, output='score'):
     Useragents should be a list of suspect useragents to evaluate.
     Default output will be JSON Blob containing descriptive information.
     Set output='score' to receive a threat score for each UA.
-<<<<<<< HEAD
 
     If you're calling this from your own application, be sure 'useragents' is a list.
     If you're expecting score to be returned, leave output alone, if you want the
     features, change output to json.
-=======
->>>>>>> 7f219a7fd9fe0c53b9f578c405ce2c7e78749e94
     """
     response_dict = {'results': {}}
     whitelist = ('curl', 'mobileasset', 'microsoft ncsi')  # Always whitelist these agents
@@ -106,15 +90,9 @@ def define_useragent(useragents, output='score'):
         close_count = len([x for x in list(agent) if x in [')', ']']])
         response_dict['results'].update({agent: {}})
         white = black = False
-<<<<<<< HEAD
         if agent.split(' ')[0].lower() in whitelist:
             white = True
         elif agent.split(' ')[0].lower() in blacklist:
-=======
-        if agent.split('/')[0].lower() in whitelist:
-            white = True
-        elif agent.split('/')[0].lower() in blacklist:
->>>>>>> 7f219a7fd9fe0c53b9f578c405ce2c7e78749e94
             black = True
         response_dict['results'][agent].update(pua)
         response_dict['results'][agent].update({'whitelisted': white})
