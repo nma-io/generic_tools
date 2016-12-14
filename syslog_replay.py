@@ -45,7 +45,7 @@ def optionparse():
     opts = argparse.ArgumentParser(description='Nicholas\' Syslog Replay Tool')
     opts.add_argument('filename', help='File continaing syslog formatted messages')
     opts.add_argument('-p', '--port', help='Syslog port (UDP), Default: 514', default=514)
-    opts.add_argument('-r', '--rate', help='Rate Per Secont (or events per second), Default: 300', default=300)
+    opts.add_argument('-r', '--rate', help='Rate Per Second (or events per second), Default: 300', default=300)
     opts.add_argument('-s', '--server', help='Server to send messages to.')
     parsed_args = opts.parse_args()
     if not parsed_args.server:
