@@ -50,7 +50,7 @@ def _score(jblob):
         score += len(m['ngrams'])  # Repeating ngrams scares me.
         score += m['length'] / 10
         if m['malformed_semicolon']: score += 10
-        if m['blacklisted']: score += 100
+        if m['blocklisted']: score += 100
         if m['malformed_hacklang']: score += 10
         if m['malformed_noparen']: score += 10
         if m['unbalanced']: score += 30
@@ -59,7 +59,7 @@ def _score(jblob):
         if m['os'].upper() == 'UNKNOWN' or m['vendor'].upper() == 'UNKNOWN': score += 10
         if m['category'].upper() == 'UNKNOWN' or m['os_version'].upper() == 'UNKNOWN': score += 10
         if m['version'].upper() == 'UNKNOWN' or m['name'].upper() == 'UNNKOWN': score += 20
-        if m['whitelisted']: score = 0
+        if m['allowlisted']: score = 0
         if score > 100: score = 100
         if score > 60: risk = 'Moderate'
         if score > 80: risk = 'High'
@@ -82,21 +82,21 @@ def define_useragent(useragents, output='score'):
     features, change output to json.
     """
     response_dict = {'results': {}}
-    whitelist = ('curl', 'mobileasset', 'microsoft ncsi')  # Always whitelist these agents
-    blacklist = ('mozilla/4.0')  # Always blacklist these user agents
+    allowlist = ('curl', 'mobileasset', 'microsoft ncsi')  # Always permit these agents
+    blocklist = ('mozilla/4.0')  # Always block these user agents
     for agent in useragents:
         pua = woothee.parse(agent)
         open_count = len([x for x in list(agent) if x in ['(', '[']])
         close_count = len([x for x in list(agent) if x in [')', ']']])
         response_dict['results'].update({agent: {}})
-        white = black = False
-        if agent.split(' ')[0].lower() in whitelist:
-            white = True
-        elif agent.split(' ')[0].lower() in blacklist:
-            black = True
+        allow = block = False
+        if agent.split(' ')[0].lower() in allowlist:
+            allow = True
+        elif agent.split(' ')[0].lower() in blocklist:
+            block = True
         response_dict['results'][agent].update(pua)
-        response_dict['results'][agent].update({'whitelisted': white})
-        response_dict['results'][agent].update({'blacklisted': black})
+        response_dict['results'][agent].update({'allowlisted': alllow})
+        response_dict['results'][agent].update({'blocklisted': block})
         response_dict['results'][agent].update({'tokens': len(agent.split(' '))})
         response_dict['results'][agent].update({'ngrams': [x for x in pyngram.calc_ngram(agent, 2) if x[1] > 1]})
         if open_count != close_count:  # unbalanced
