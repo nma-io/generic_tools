@@ -9,6 +9,7 @@ I simply modified it to pull the config and make it auditable for security purpo
 from meraki import meraki
 import argparse
 import json
+import time
 
 
 def get_org_id(apikey, orgName, suppressprint):
@@ -61,7 +62,7 @@ def write_vpn_settings(file, apikey, networkid, suppressprint):
     myVPN = meraki.getvpnsettings(apikey, networkid, suppressprint)
     file.write("VPN Settings: {}\n".format(str(networkid)))
     for row in myVPN:
-        file.write(str(row) + "\n")
+        file.write(row + ": " + str(json.dumps(myVPN[row])) + "\n")
     file.write("\n")
 
 
@@ -70,7 +71,7 @@ def write_snmp_settings(file, apikey, orgid, suppressprint):
     mySNMP = meraki.getsnmpsettings(apikey, orgid, suppressprint)
     file.write("SNMP Settings:\n")
     for row in mySNMP:
-        file.write(str(row) + "\n")
+        file.write(row + ": " + str(json.dumps(mySNMP[row])) + "\n")
     file.write("\n")
 
 
@@ -128,6 +129,8 @@ if __name__ == "__main__":
     orgid = get_org_id(apikey, args.orgName, suppressprint)
 
     with open(args.o, 'w') as file:
+        file.write("Meraki Firewall Audit tool - {} @ {}\n\n".format(args.orgName, time.strftime("%Y-%m-%d %H:%M")))
+        file.flush()
         myNetworks = meraki.getnetworklist(apikey, orgid, None, suppressprint)
         for row in myNetworks:
             tags = row['tags']
@@ -144,15 +147,32 @@ if __name__ == "__main__":
             try:
                 get_wan_info(file, apikey, row['id'], suppressprint)
                 file.flush()
+            except:
+                pass
+            try:
                 write_mx_cellular_fw_rules(file, apikey, row['id'], suppressprint)
                 file.flush()
+            except:
+                pass
+            try:
                 write_mx_l3_fw_rules(file, apikey, row['id'], suppressprint)
                 file.flush()
+            except:
+                pass
+            try:
                 write_vpn_settings(file, apikey, row['id'], suppressprint)
                 file.flush()
+            except:
+                pass
+            try:
+                write_snmp_settings(file, apikey, orgid, suppressprint)
+                file.flush()
+            except:
+                pass
+            try:
                 write_ssid_settings(file, apikey, row['id'], suppressprint)
                 file.write("\n")
-                file.flush()
-            except Exception as err:
-                print(err)
+            except:
                 pass
+
+            file.flush()
