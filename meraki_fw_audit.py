@@ -124,6 +124,14 @@ if __name__ == "__main__":
         file.write("Meraki Firewall Audit tool - {} @ {}\n\n".format(args.orgName, time.strftime("%Y-%m-%d %H:%M")))
         file.flush()
         myNetworks = meraki.getnetworklist(apikey, orgid, None, suppressprint)
+        file.write("Dashboard Users:\n")
+        try:
+            write_admins(file, apikey, orgid, suppressprint)
+            file.flush()
+        except:
+            file.write("\tERROR - Unable to Access or Parse Data")
+            pass
+
         for row in myNetworks:
             tags = row['tags']
             if not tags:
@@ -136,15 +144,6 @@ if __name__ == "__main__":
                 continue
 
             file.write("Processing network " + row['name'] + "...\n")
-
-            file.write("Dashboard Users:\n")
-            try:
-                write_admins(file, apikey, orgid, suppressprint)
-                file.flush()
-            except:
-                file.write("\tERROR - Unable to Access or Parse Data")
-                pass
-
             file.write("WAN Info:\n")
             try:
                 get_wan_info(file, apikey, row['id'], suppressprint)
