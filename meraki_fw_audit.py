@@ -24,54 +24,48 @@ def get_org_id(apikey, orgName, suppressprint):
 def write_admins(file, apikey, orgid, suppressprint):
     """Output Dashboard Users."""
     myOrgAdmins = meraki.getorgadmins(apikey, orgid, suppressprint)
-    file.write("Dashboard Users:\n")
     for row in myOrgAdmins:
-        file.write("{}\n".format(json.dumps(row)))
+        file.write("\t" + "{}\n".format(json.dumps(row)))
     file.write("\n")
 
 
 def write_mx_l3_fw_rules(file, apikey, networkid, suppressprint):
     """Output Network Rules. The real ones, not just NAT."""
     myRules = meraki.getmxl3fwrules(apikey, networkid, suppressprint)[0:-1]
-    file.write("Layer 3 Network Rules: {}\n".format(str(networkid)))
     for row in myRules:
-        file.write(str(row) + "\n")
+        file.write("\t" + str(row) + "\n")
     file.write("\n")
 
 
 def write_mx_cellular_fw_rules(file, apikey, networkid, suppressprint):
     """Output Cellular Backup Rules."""
     myRules = meraki.getmxcellularfwrules(apikey, networkid, suppressprint)[0:-1]
-    file.write("MX Cellular Rules: {}\n".format(str(networkid)))
     for row in myRules:
-        file.write(str(row) + "\n")
+        file.write("\t" + str(row) + "\n")
     file.write("\n")
 
 
 def write_mx_vpn_fw_rules(file, apikey, orgid, suppressprint):
     """Output VPN Rules."""
     myRules = meraki.getmxvpnfwrules(apikey, orgid, suppressprint)[0:-1]
-    file.write("VPN Rules:\n")
     for row in myRules:
-        file.write(str(row) + "\n")
+        file.write("\t" + str(row) + "\n")
     file.write("\n")
 
 
 def write_vpn_settings(file, apikey, networkid, suppressprint):
     """Output VPN Settings."""
     myVPN = meraki.getvpnsettings(apikey, networkid, suppressprint)
-    file.write("VPN Settings: {}\n".format(str(networkid)))
     for row in myVPN:
-        file.write(row + ": " + str(json.dumps(myVPN[row])) + "\n")
+        file.write("\t" + row + ": " + str(json.dumps(myVPN[row])) + "\n")
     file.write("\n")
 
 
 def write_snmp_settings(file, apikey, orgid, suppressprint):
     """Output SNMP Settings."""
     mySNMP = meraki.getsnmpsettings(apikey, orgid, suppressprint)
-    file.write("SNMP Settings:\n")
     for row in mySNMP:
-        file.write(row + ": " + str(json.dumps(mySNMP[row])) + "\n")
+        file.write("\t" + row + ": " + str(json.dumps(mySNMP[row])) + "\n")
     file.write("\n")
 
 
@@ -80,7 +74,7 @@ def write_non_meraki_vpn_peers(file, apikey, orgid, suppressprint):
     myPeers = meraki.getnonmerakivpnpeers(apikey, orgid, suppressprint)
     file.write("VPN Peers:\n")
     for row in myPeers:
-        file.write(str(row) + "\n")
+        file.write("\t" + str(row) + "\n")
     file.write("\n")
 
 
@@ -89,14 +83,13 @@ def write_ssid_settings(file, apikey, networkid, suppressprint):
     mySSIDs = meraki.getssids(apikey, networkid, suppressprint)
     if mySSIDs is None:
         return
-    file.write("Wifi/SSID Information:\n")
     for row in mySSIDs:
-        file.write("SSIDs: {} ".format(str(row['number'])))
+        file.write("\tSSIDs: {} ".format(str(row['number'])))
         file.write(str(row) + "\n")
-        file.write("Rules:\n")
+        file.write("\tRules:\n")
         myRules = meraki.getssidl3fwrules(apikey, networkid, row['number'], suppressprint)[0:-2]
         for row2 in myRules:
-            file.write("\t" + str(row2) + "\n")
+            file.write("\t\t" + str(row2) + "\n")
         file.write("\n")
     file.write("\n")
 
@@ -104,11 +97,10 @@ def write_ssid_settings(file, apikey, networkid, suppressprint):
 def get_wan_info(file, apikey, networkid, suppressprint):
     """Get the WAN information for all devices, so we know the external IP."""
     myDev = meraki.getnetworkdevices(apikey, networkid, suppressprint=False)
-    file.write("WAN Info:\n")
     for row in myDev:
         uplink = meraki.getdeviceuplink(apikey, networkid, row["serial"], suppressprint=False)
         for row in uplink:
-            file.write(str(uplink) + "\n")
+            file.write("\t" + str(uplink) + "\n")
         file.write("\n")
 
 if __name__ == "__main__":
@@ -144,35 +136,69 @@ if __name__ == "__main__":
                 continue
 
             file.write("Processing network " + row['name'] + "...\n")
+
+            file.write("Dashboard Users:\n")
+            try:
+                write_admins(file, apikey, orgid, suppressprint)
+                file.flush()
+            except:
+                file.write("\tERROR - Unable to Access or Parse Data")
+                pass
+
+            file.write("WAN Info:\n")
             try:
                 get_wan_info(file, apikey, row['id'], suppressprint)
                 file.flush()
             except:
+                file.write("\tERROR - Unable to Access or Parse Data")
                 pass
+
+            file.write("MX Cellular Rules: {}\n".format(str(row['id'])))
             try:
                 write_mx_cellular_fw_rules(file, apikey, row['id'], suppressprint)
                 file.flush()
             except:
+                file.write("\tERROR - Unable to Access or Parse Data")
                 pass
+
+            file.write("VPN Rules:\n")
+            try:
+                write_mx_vpn_fw_rules(file, apikey, orgid, suppressprint)
+                file.flush()
+            except:
+                file.write("\tERROR - Unable to Access or Parse Data")
+                pass
+
+            file.write("Layer 3 Network Rules: {}\n".format(str(row['id'])))
             try:
                 write_mx_l3_fw_rules(file, apikey, row['id'], suppressprint)
                 file.flush()
             except:
+                file.write("\tERROR - Unable to Access or Parse Data")
                 pass
+
+            file.write("VPN Settings: {}\n".format(str(row['id'])))
             try:
                 write_vpn_settings(file, apikey, row['id'], suppressprint)
                 file.flush()
             except:
+                file.write("\tERROR - Unable to Access or Parse Data")
                 pass
+
+            file.write("SNMP Settings:\n")
             try:
                 write_snmp_settings(file, apikey, orgid, suppressprint)
                 file.flush()
             except:
+                file.write("\tERROR - Unable to Access or Parse Data")
                 pass
+
+            file.write("Wifi/SSID Information:\n")
             try:
                 write_ssid_settings(file, apikey, row['id'], suppressprint)
                 file.write("\n")
             except:
+                file.write("\tERROR - Unable to Access or Parse Data")
                 pass
 
             file.flush()
